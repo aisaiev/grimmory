@@ -1,0 +1,37 @@
+<ng-container *transloco="let t; prefix: 'book.isbnScanner'">
+  <div class="scanner-controls">
+    @if (isCameraReady && !cameraPermissionRequested && !isScanning) {
+      <p-button
+        [label]="t('requestCameraPermission')"
+        icon="pi pi-camera"
+        severity="primary"
+        (onClick)="requestCameraPermission()"/>
+    }
+    @if (cameraPermissionRequested && cameras.length > 1 && !isScanning) {
+      <p-select
+        [(ngModel)]="selectedCameraId"
+        [options]="cameras"
+        optionLabel="label"
+        optionValue="id"
+        placeholder="Select Camera"
+        class="camera-select"/>
+    }
+    @if (cameraPermissionRequested && !isScanning) {
+      <p-button
+        [label]="t('startScanning')"
+        icon="pi pi-camera"
+        severity="primary"
+        (onClick)="startScanning()"
+        [disabled]="!selectedCameraId"/>
+    }
+    @if (isScanning) {
+      <p-button
+        [label]="t('stopScanning')"
+        icon="pi pi-stop-circle"
+        severity="danger"
+        (onClick)="stopScanning()"/>
+    }
+  </div>
+
+  <div [id]="containerId" class="isbn-scanner-container"></div>
+</ng-container>

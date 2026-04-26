@@ -1,4 +1,4 @@
-import {Component, effect, inject} from '@angular/core';
+import {ChangeDetectorRef, Component, effect, inject} from '@angular/core';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 import {FormsModule} from '@angular/forms';
 import {Button} from 'primeng/button';
@@ -14,6 +14,7 @@ import {Library} from '../../model/library.model';
 import {BookMetadata, CreatePhysicalBookRequest} from '../../model/book.model';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {Tabs, TabList, Tab, TabPanels, TabPanel} from 'primeng/tabs';
+import {IsbnScannerComponent} from '../isbn-scanner/isbn-scanner.component';
 
 const MAX_ISBN_COUNT = 500;
 const MAX_FILE_SIZE_BYTES = 1_048_576; // 1 MB
@@ -54,6 +55,7 @@ type ImportPhase = 'upload' | 'processing' | 'summary';
     Tab,
     TabPanels,
     TabPanel,
+    IsbnScannerComponent,
   ],
   styleUrl: './bulk-isbn-import-dialog.component.scss',
 })
@@ -63,6 +65,7 @@ export class BulkIsbnImportDialogComponent {
   private bookService = inject(BookService);
   private bookMetadataService = inject(BookMetadataService);
   private libraryService = inject(LibraryService);
+  private cdr = inject(ChangeDetectorRef);
 
   selectedLibraryId: number | null = null;
 
@@ -72,6 +75,8 @@ export class BulkIsbnImportDialogComponent {
   skipped: SkippedEntry[] = [];
   duplicatesRemoved = 0;
   showSkipped = false;
+
+  scannedIsbns: string[] = [];
 
   processedCount = 0;
   createdCount = 0;
@@ -101,6 +106,15 @@ export class BulkIsbnImportDialogComponent {
     return this.libraryService.libraries();
   }
 
+  get scannedText(): string {
+    return this.scannedIsbns.join('\n');
+  }
+
+  set scannedText(value: string) {
+    // Update scannedIsbns array when textarea is manually edited
+    this.scannedIsbns = value.split(/[\n\r]+/).map(s => s.trim()).filter(s => s.length);
+  }
+
   onFileSelect(event: FileSelectEvent): void {
     const file = event.files?.[0];
     if (!file) return;
@@ -114,6 +128,7 @@ export class BulkIsbnImportDialogComponent {
     reader.onload = () => {
       const content = reader.result as string;
       this.parseContent(content, file.name);
+      this.cdr.detectChanges();
     };
     reader.readAsText(file, 'UTF-8');
   }
@@ -129,6 +144,7 @@ export class BulkIsbnImportDialogComponent {
     this.duplicatesRemoved = 0;
     this.parseError = '';
     this.pasteText = '';
+    this.scannedIsbns = [];
   }
 
   canStartImport(): boolean {
@@ -185,6 +201,7 @@ export class BulkIsbnImportDialogComponent {
       }
 
       this.processedCount++;
+      this.cdr.detectChanges();
 
       if (!this.cancelled && entry !== this.entries[this.entries.length - 1]) {
         await this.delay(DELAY_BETWEEN_REQUESTS_MS);
@@ -192,6 +209,7 @@ export class BulkIsbnImportDialogComponent {
     }
 
     this.phase = 'summary';
+    this.cdr.detectChanges();
   }
 
   cancelImport(): void {
@@ -365,5 +383,18 @@ export class BulkIsbnImportDialogComponent {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  onIsbnScanned(isbn: string): void {
+    if (!this.scannedIsbns.includes(isbn)) {
+      this.scannedIsbns.push(isbn);
+      this.cdr.detectChanges();
+    }
+  }
+
+  parseScannedIsbns(): void {
+    if (!this.scannedIsbns.length) return;
+    const content = this.scannedIsbns.join('\n');
+    this.parseContent(content, 'scan');
   }
 }

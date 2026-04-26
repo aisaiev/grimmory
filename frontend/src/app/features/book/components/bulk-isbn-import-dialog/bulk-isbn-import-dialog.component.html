@@ -45,6 +45,7 @@
           <p-tablist>
             <p-tab value="file">{{ t('tabFile') }}</p-tab>
             <p-tab value="paste">{{ t('tabPaste') }}</p-tab>
+            <p-tab value="scan">{{ t('tabScan') }}</p-tab>
           </p-tablist>
           <p-tabpanels>
             <p-tabpanel value="file">
@@ -76,6 +77,32 @@
                   [outlined]="true"
                   (onClick)="parsePastedText()"
                   [disabled]="!pasteText.trim()"/>
+              </div>
+            </p-tabpanel>
+            <p-tabpanel value="scan">
+              <div class="scan-section">
+                <app-isbn-scanner (isbnScanned)="onIsbnScanned($event)"></app-isbn-scanner>
+                <div class="scanned-textarea-section">
+                  @if (scannedIsbns.length) {
+                    <p class="scan-count">
+                      <i class="pi pi-check-circle"></i>
+                      {{ t('scannedCount', {count: scannedIsbns.length}) }}
+                    </p>
+                  }
+                  <textarea
+                    pTextarea
+                    [(ngModel)]="scannedText"
+                    rows="6"
+                    [placeholder]="t('scanPlaceholder')"
+                    class="input-full"></textarea>
+                  <p-button
+                    [label]="t('parseButton')"
+                    icon="pi pi-check"
+                    severity="info"
+                    [outlined]="true"
+                    (onClick)="parseScannedIsbns()"
+                    [disabled]="!scannedText.trim()"/>
+                </div>
               </div>
             </p-tabpanel>
           </p-tabpanels>

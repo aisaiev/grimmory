@@ -262,7 +262,7 @@
     "library": {
       "optionsLabel": "Options",
       "addPhysicalBook": "Add Physical Book",
-      "bulkIsbnImport": "Import ISBNs from File",
+      "bulkIsbnImport": "Import ISBNs",
       "editLibrary": "Edit Library",
       "rescanLibrary": "Re-scan Library",
       "customFetchMetadata": "Custom Fetch Metadata",
@@ -447,10 +447,13 @@
     "libraryPlaceholder": "Select a library",
     "tabFile": "Upload File",
     "tabPaste": "Paste ISBNs",
+    "tabScan": "Scan ISBNs",
     "chooseFile": "Choose File",
     "fileFormatsHint": "Supported formats: .txt, .csv, .tsv (max 1 MB)",
     "pastePlaceholder": "Paste ISBNs here, one per line or comma-separated...",
+    "scanPlaceholder": "Scanned ISBNs will appear here...",
     "parseButton": "Parse",
+    "scannedCount": "{{ count }} scanned ISBN(s)",
     "errorFileTooLarge": "File exceeds the 1 MB size limit.",
     "errorNoIsbns": "No ISBNs found in the input.",
     "errorTooMany": "Only the first {{ max }} ISBNs will be imported. Split your file for the rest.",
@@ -464,7 +467,7 @@
     "previewLabel": "ISBNs to import",
     "clearButton": "Clear",
     "validationLibraryRequired": "Select a library",
-    "validationNoIsbns": "Upload a file or paste ISBNs to begin",
+    "validationNoIsbns": "Upload a file, paste or scan ISBNs to begin",
     "validationReady": "Ready to import {{ count }} ISBN(s)",
     "cancelButton": "Cancel",
     "startImportButton": "Start Import",
@@ -481,6 +484,16 @@
     "summaryCancelled": "Skipped (cancelled)",
     "failedIsbnsLabel": "Failed ISBNs",
     "doneButton": "Done"
+  },
+  "isbnScanner": {
+    "requestCameraPermission": "Request Camera Permission",
+    "startScanning": "Start Scanning",
+    "stopScanning": "Stop Scanning",
+    "scanError": "Camera access denied or not available. Enable camera permissions and use HTTPS.",
+    "scanStopError": "Failed to stop scanner. Please refresh the page.",
+    "scanCleanupError": "Failed to cleanup scanner resources.",
+    "noCamerasFound": "No cameras found. Please check your device.",
+    "cameraPermissionDenied": "Camera permission denied. Please allow camera access."
   },
   "fileUploader": {
     "title": "Upload Additional File",
