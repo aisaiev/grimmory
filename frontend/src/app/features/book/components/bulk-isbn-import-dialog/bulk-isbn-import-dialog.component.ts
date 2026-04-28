@@ -36,6 +36,7 @@ export interface SkippedEntry {
 }
 
 type ImportPhase = 'upload' | 'processing' | 'summary';
+type ParseSource = 'paste' | 'scan' | (string & {});
 
 @Component({
   selector: 'app-bulk-isbn-import-dialog',
@@ -76,7 +77,11 @@ export class BulkIsbnImportDialogComponent {
   duplicatesRemoved = 0;
   showSkipped = false;
 
-  scannedIsbns: string[] = [];
+  scannedText = '';
+
+  get scannedIsbns(): string[] {
+    return this.scannedText.split(/[\n\r]+/).map(s => s.trim()).filter(s => s.length);
+  }
 
   processedCount = 0;
   createdCount = 0;
@@ -104,15 +109,6 @@ export class BulkIsbnImportDialogComponent {
 
   get libraries(): Library[] {
     return this.libraryService.libraries();
-  }
-
-  get scannedText(): string {
-    return this.scannedIsbns.join('\n');
-  }
-
-  set scannedText(value: string) {
-    // Update scannedIsbns array when textarea is manually edited
-    this.scannedIsbns = value.split(/[\n\r]+/).map(s => s.trim()).filter(s => s.length);
   }
 
   onFileSelect(event: FileSelectEvent): void {
@@ -144,7 +140,7 @@ export class BulkIsbnImportDialogComponent {
     this.duplicatesRemoved = 0;
     this.parseError = '';
     this.pasteText = '';
-    this.scannedIsbns = [];
+    this.scannedText = '';
   }
 
   canStartImport(): boolean {
@@ -228,7 +224,7 @@ export class BulkIsbnImportDialogComponent {
     return this.libraries.find(l => l.id === this.selectedLibraryId)?.name ?? '';
   }
 
-  private parseContent(content: string, source: string): void {
+  private parseContent(content: string, source: ParseSource): void {
     this.parseError = '';
     this.skipped = [];
     this.duplicatesRemoved = 0;
@@ -242,8 +238,8 @@ export class BulkIsbnImportDialogComponent {
 
     if (extension === 'csv' || extension === 'tsv') {
       isbns = this.parseCsvLines(lines, extension === 'tsv' ? '\t' : undefined);
-    } else if (source === 'paste') {
-      // Pasted text: split by newlines, commas, semicolons, or spaces
+    } else if (source === 'paste' || source === 'scan') {
+      // Free-form text (pasted or scanned): split by newlines, commas, semicolons, or spaces
       const tokens = cleaned.split(/[\n\r,;\s]+/);
       isbns = tokens.map(t => t.trim()).filter(t => t.length > 0);
     } else {
@@ -387,14 +383,15 @@ export class BulkIsbnImportDialogComponent {
 
   onIsbnScanned(isbn: string): void {
     if (!this.scannedIsbns.includes(isbn)) {
-      this.scannedIsbns.push(isbn);
+      this.scannedText = this.scannedText.trimEnd()
+        ? `${this.scannedText.trimEnd()}\n${isbn}`
+        : isbn;
       this.cdr.detectChanges();
     }
   }
 
   parseScannedIsbns(): void {
-    if (!this.scannedIsbns.length) return;
-    const content = this.scannedIsbns.join('\n');
-    this.parseContent(content, 'scan');
+    if (!this.scannedText.trim()) return;
+    this.parseContent(this.scannedText, 'scan');
   }
 }

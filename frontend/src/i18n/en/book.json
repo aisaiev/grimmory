@@ -490,8 +490,7 @@
     "startScanning": "Start Scanning",
     "stopScanning": "Stop Scanning",
     "scanError": "Camera access denied or not available. Enable camera permissions and use HTTPS.",
-    "scanStopError": "Failed to stop scanner. Please refresh the page.",
-    "scanCleanupError": "Failed to cleanup scanner resources.",
+    "selectCamera": "Select Camera",
     "noCamerasFound": "No cameras found. Please check your device.",
     "cameraPermissionDenied": "Camera permission denied. Please allow camera access."
   },

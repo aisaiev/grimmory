@@ -1,30 +1,31 @@
 <ng-container *transloco="let t; prefix: 'book.isbnScanner'">
   <div class="scanner-controls">
-    @if (isCameraReady && !cameraPermissionRequested && !isScanning) {
+    @if (!cameraPermissionApproved() && !isScanning()) {
       <p-button
         [label]="t('requestCameraPermission')"
         icon="pi pi-camera"
         severity="primary"
         (onClick)="requestCameraPermission()"/>
     }
-    @if (cameraPermissionRequested && cameras.length > 1 && !isScanning) {
+    @if (cameraPermissionApproved() && cameras().length > 1 && !isScanning()) {
       <p-select
-        [(ngModel)]="selectedCameraId"
-        [options]="cameras"
+        [ngModel]="selectedCameraId()"
+        (ngModelChange)="selectedCameraId.set($event)"
+        [options]="cameras()"
         optionLabel="label"
-        optionValue="id"
-        placeholder="Select Camera"
+        optionValue="deviceId"
+        [placeholder]="t('selectCamera')"
         class="camera-select"/>
     }
-    @if (cameraPermissionRequested && !isScanning) {
+    @if (cameraPermissionApproved() && !isScanning()) {
       <p-button
         [label]="t('startScanning')"
         icon="pi pi-camera"
         severity="primary"
         (onClick)="startScanning()"
-        [disabled]="!selectedCameraId"/>
+        [disabled]="!selectedCameraId()"/>
     }
-    @if (isScanning) {
+    @if (isScanning()) {
       <p-button
         [label]="t('stopScanning')"
         icon="pi pi-stop-circle"
@@ -33,5 +34,13 @@
     }
   </div>
 
-  <div [id]="containerId" class="isbn-scanner-container"></div>
+  <video
+    #videoElement
+    class="isbn-scanner-container"
+    playsinline
+    autoplay
+    muted
+    [hidden]="!isScanning()"
+    [class.scan-success]="scanSuccess()">
+  </video>
 </ng-container>
