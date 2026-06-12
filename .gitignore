@@ -49,6 +49,8 @@ frontend/output/
 frontend/playwright-report/
 frontend/.playwright-browsers/
 node_modules/
+proxy/dist/
+proxy/node_modules/
 backend/src/main/resources/application-local.yaml
 /shared/
 

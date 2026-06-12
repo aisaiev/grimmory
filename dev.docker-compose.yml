@@ -1,4 +1,14 @@
 services:
+  browser-proxy:
+    build:
+      context: browser-proxy
+      dockerfile: Dockerfile
+    ports:
+      - "7350:7350"
+    environment:
+      - PROXY_PORT=7350
+    restart: unless-stopped
+
   backend:
     build:
       context: .
@@ -11,6 +21,8 @@ services:
       - "${BACKEND_PORT:-6060}:6060"
       - "127.0.0.1:${REMOTE_DEBUG_PORT:-5005}:5005"
     environment:
+      - BROWSER_PROXY_ENABLED=${BROWSER_PROXY_ENABLED:-true}
+      - BROWSER_PROXY_URL=http://browser-proxy:7350
       - DATABASE_URL=jdbc:mariadb://backend_db:3306/grimmory
       - DATABASE_USERNAME=grimmory
       - DATABASE_PASSWORD=grimmory

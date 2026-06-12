@@ -50,6 +50,7 @@ public class GoodReadsParser implements BookParser, DetailedMetadataProvider {
     private static final int COUNT_DETAILED_METADATA_TO_GET = 3;
 
     private final HttpClient httpClient;
+    private final BrowserProxyClient proxyClient;
     private final AppSettingService appSettingService;
     private final ObjectMapper objectMapper;
 
@@ -530,30 +531,21 @@ public class GoodReadsParser implements BookParser, DetailedMetadataProvider {
         }
     }
 
-    private <T> T fetchJson(String url, TypeReference<T> typeReference) throws InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .build();
-
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() < 200 || response.statusCode() > 399) {
-                log.error("GoodReads request failed with status code: {}", response.statusCode());
-                throw new RuntimeException("Failed to query GoodReads");
-            }
-
-            return objectMapper.readValue(response.body(), typeReference);
-        } catch (InterruptedException e) {
-            throw e;
-        } catch (IOException e) {
-            log.error("GoodReads request failed", e);
-            throw new RuntimeException(e);
+    private <T> T fetchJson(String url, TypeReference<T> typeReference) {
+        if (proxyClient.isEnabled()) {
+            return proxyClient.fetchJson(url, typeReference);
         }
+        return directFetchJson(url, typeReference);
     }
 
     private Document fetchDoc(String url) {
+        if (proxyClient.isEnabled()) {
+            return proxyClient.fetchDoc(url);
+        }
+        return directFetchDoc(url);
+    }
+
+    private Document directFetchDoc(String url) {
         try {
             return Jsoup.connect(url)
                     .header("accept", "text/html, application/json")
@@ -583,6 +575,30 @@ public class GoodReadsParser implements BookParser, DetailedMetadataProvider {
                     .get();
         } catch (IOException e) {
             log.error("Error parsing url: {}", url, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T> T directFetchJson(String url, TypeReference<T> typeReference) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() < 200 || response.statusCode() > 399) {
+                log.error("GoodReads request failed with status code: {}", response.statusCode());
+                throw new RuntimeException("Failed to query GoodReads");
+            }
+
+            return objectMapper.readValue(response.body(), typeReference);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("GoodReads request interrupted", e);
+        } catch (IOException e) {
+            log.error("GoodReads request failed", e);
             throw new RuntimeException(e);
         }
     }

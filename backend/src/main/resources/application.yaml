@@ -1,3 +1,8 @@
+browser:
+  proxy:
+    enabled: ${BROWSER_PROXY_ENABLED:true}
+    url: ${BROWSER_PROXY_URL:http://localhost:7350}
+
 app:
   path-config: ${APP_PATH_CONFIG:/app/data}
   bookdrop-folder: ${APP_BOOKDROP_FOLDER:/bookdrop}

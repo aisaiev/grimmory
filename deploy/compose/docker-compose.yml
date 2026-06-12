@@ -1,4 +1,11 @@
 services:
+  browser-proxy:
+    image: grimmory/browser-proxy:latest
+    container_name: browser-proxy
+    environment:
+      - PROXY_PORT=7350
+    restart: unless-stopped
+
   # Upgrade path from Booklore:
   # Keep your existing service name, container_name, database names/users, ports,
   # and mounted volumes. Replace only the image line(s) with Grimmory tags.
@@ -15,6 +22,8 @@ services:
       - USER_ID=1000
       - GROUP_ID=1000
       - TZ=Etc/UTC
+      - BROWSER_PROXY_ENABLED=${BROWSER_PROXY_ENABLED:-true}
+      - BROWSER_PROXY_URL=http://browser-proxy:7350
       - DATABASE_URL=jdbc:mariadb://mariadb:3306/grimmory
       - DATABASE_USERNAME=grimmory
       - DATABASE_PASSWORD=your_secure_password
